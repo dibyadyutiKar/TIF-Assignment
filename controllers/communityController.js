@@ -85,6 +85,9 @@ const createCommunity = async (req, res) => {
 // Get all communities
 const getAllCommunity = async (req, res) => {
   try {
+    const { page = 1, size = 10 } = req.query;
+    const skip = (page - 1) * size;
+
     const communities = await communityCollection
       .aggregate([
         {
@@ -105,12 +108,22 @@ const getAllCommunity = async (req, res) => {
           },
         },
       ])
+      .skip(skip)
+      .limit(size)
       .toArray();
+
+    // Calculate the total number of pages
+    const totalPages = Math.ceil(communities.length / size);
 
     //   pending ____________________________________________________
     res.status(200).json({
       status: true,
       content: {
+        meta: {
+          total: communities.length,
+          pages: totalPages,
+          page: page,
+        },
         data: communities,
       },
     });
@@ -122,6 +135,9 @@ const getAllCommunity = async (req, res) => {
 const getMembersCommunity = async (req, res) => {
   try {
     const communityId = req.params.id;
+
+    const { page = 1, size = 10 } = req.query;
+    const skip = (page - 1) * size;
 
     const members = await memberCollection
       .aggregate([
@@ -154,13 +170,21 @@ const getMembersCommunity = async (req, res) => {
           },
         },
       ])
+      .skip(skip)
+      .limit(size)
       .toArray();
 
-    // pending _____________________________________________________
+    // Calculate the total number of pages
+    const totalPages = Math.ceil(members.length / size);
 
     res.status(200).json({
       status: true,
       content: {
+        meta: {
+          total: members.length,
+          pages: totalPages,
+          page: page,
+        },
         data: members,
       },
     });
@@ -176,11 +200,26 @@ const getMyOwnedCommunity = async (req, res) => {
   try {
     const id = req.user._id;
 
-    const community = await communityCollection.find({ owner: id }).toArray();
+    const { page = 1, size = 10 } = req.query;
+    const skip = (page - 1) * size;
+
+    const community = await communityCollection
+      .find({ owner: id })
+      .skip(skip)
+      .limit(size)
+      .toArray();
+
+    // Calculate the total number of pages
+    const totalPages = Math.ceil(community.length / size);
 
     res.status(200).json({
       status: true,
       content: {
+        meta: {
+          total: community.length,
+          pages: totalPages,
+          page: page,
+        },
         data: community,
       },
     });
@@ -229,11 +268,21 @@ const createRole = async (req, res) => {
 // Get All Role
 const getAllRole = async (req, res) => {
   try {
-    const roles = await roleCollection.find().toArray();
+    const { page = 1, size = 10 } = req.query;
+    const skip = (page - 1) * size;
+
+    const roles = await roleCollection.find().skip(skip).limit(size).toArray();
+
+    const totalPages = Math.ceil(roles.length / size);
 
     res.status(200).json({
       status: true,
       content: {
+        meta: {
+          total: roles.length,
+          pages: totalPages,
+          page: page,
+        },
         data: roles,
       },
     });
@@ -245,6 +294,9 @@ const getAllRole = async (req, res) => {
 const getMyJoinedCommunity = async (req, res) => {
   try {
     const id = req.user._id;
+
+    const { page = 1, size = 10 } = req.query;
+    const skip = (page - 1) * size;
 
     const members = await memberCollection
       .aggregate([
@@ -268,11 +320,18 @@ const getMyJoinedCommunity = async (req, res) => {
         },
       ])
       .toArray();
+
+    const totalPages = Math.ceil(members.length / size);
     const community = members.map((member) => member.community);
 
     res.status(200).json({
       status: true,
       content: {
+        meta: {
+          total: members.length,
+          pages: totalPages,
+          page: page,
+        },
         data: community,
       },
     });

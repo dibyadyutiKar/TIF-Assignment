@@ -37,6 +37,21 @@ const addMember = async (req, res) => {
 const removeMember = async (req, res) => {
   const memberId = req.params.id;
 
+  const existingMember = await memberCollection.findOne({ _id: memberId });
+  // console.log('existing member', existingMember);
+
+  if (!existingMember) {
+    return res.status(200).json({
+      status: false,
+      errors: [
+        {
+          message: 'Member not found.',
+          code: 'RESOURCE_NOT_FOUND',
+        },
+      ],
+    });
+  }
+
   const member = await memberCollection.deleteOne({ _id: memberId });
 
   //   delete member id from community

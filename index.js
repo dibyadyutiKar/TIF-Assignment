@@ -14,16 +14,12 @@ app.use(express.urlencoded({ extended: true }));
 connectToDB()
   .then(() => {
     // Database connection established
-    const roleRoutes = require('./routes/role');
-    const authRoutes = require('./routes/auth');
-    const communityRoutes = require('./routes/community');
-    const memberRoutes = require('./routes/member');
+    const routes = require('./routes');
 
-    app.use('/v1/role', roleRoutes);
-    app.use('/v1/auth', authRoutes);
-    app.use('/v1/community', communityRoutes);
-    app.use('/v1/member', memberRoutes);
+    // Handle routes
+    app.use('/v1', routes);
 
+    // Server Start
     app.listen(3000, () => {
       console.log('Server started');
     });
