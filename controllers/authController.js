@@ -14,7 +14,7 @@ const signUp = async (req, res) => {
     // check if user exists already
     const existingUser = await userCollection.findOne({ email });
 
-    if (name.length < 2 || password.length < 2 || existingUser) {
+    if (name.length < 2 || password.length <= 2 || existingUser) {
       const error = [];
       if (name.length < 2) {
         error.push({
@@ -23,7 +23,7 @@ const signUp = async (req, res) => {
           code: 'INVALID_INPUT',
         });
       }
-      if (password.length < 2) {
+      if (password.length <= 2) {
         error.push({
           param: 'password',
           message: 'Password should be at least 2 characters.',
