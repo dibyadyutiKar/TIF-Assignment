@@ -41,17 +41,29 @@ const auth = (req, res, next) => {
 };
 
 const isCommunityAdmin = async (req, res, next) => {
-  const id = req.user._id;
+  try {
+    const id = req.user._id;
 
-  const member = await memberCollection.findOne({ user: id });
-  console.log(member);
-  const role = await roleCollection.findOne({ _id: member.role });
+    const member = await memberCollection.findOne({ user: id });
+    console.log(member);
+    const role = await roleCollection.findOne({ _id: member.role });
 
-  console.log('Role', role);
+    console.log('Role', role);
 
-  if (role.name == 'Community Admin') {
-    next();
-  } else {
+    if (role.name == 'Community Admin') {
+      next();
+    } else {
+      return res.status(400).json({
+        status: false,
+        errors: [
+          {
+            message: 'You are not authorized to perform this action.',
+            code: 'NOT_ALLOWED_ACCESS',
+          },
+        ],
+      });
+    }
+  } catch (err) {
     return res.status(400).json({
       status: false,
       errors: [

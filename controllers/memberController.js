@@ -3,11 +3,73 @@ const { getDb } = require('../config');
 
 const db = getDb();
 const memberCollection = db.collection('members');
+const communityCollection = db.collection('communities');
 const roleCollection = db.collection('roles');
+const userCollection = db.collection('users');
 
 const addMember = async (req, res) => {
   try {
     const { community, user, role } = req.body;
+
+    // if user not found
+    const existingUser = await userCollection.findOne({ _id: user });
+    if (!existingUser) {
+      return res.status(400).json({
+        status: false,
+        errors: [
+          {
+            param: 'user',
+            message: 'User not found.',
+            code: 'RESOURCE_NOT_FOUND',
+          },
+        ],
+      });
+    }
+
+    // if community does not exist
+    const existingCommunity = await communityCollection.findOne({
+      _id: community,
+    });
+    if (!existingCommunity) {
+      return res.status(400).json({
+        status: false,
+        errors: [
+          {
+            param: 'community',
+            message: 'Community not found.',
+            code: 'RESOURCE_NOT_FOUND',
+          },
+        ],
+      });
+    }
+
+    // if role not found
+    const roles = await roleCollection.findOne({ _id: role });
+    if (!roles) {
+      return res.status(400).json({
+        status: false,
+        errors: [
+          {
+            param: 'role',
+            message: 'Role not found.',
+            code: 'RESOURCE_NOT_FOUND',
+          },
+        ],
+      });
+    }
+    // if member already exist
+    const existingMember = await memberCollection.findOne({ user: user });
+    if (existingMember) {
+      return res.status(400).json({
+        status: false,
+        errors: [
+          {
+            message: 'User is already added in the community.',
+            code: 'RESOURCE_EXISTS',
+          },
+        ],
+      });
+    }
 
     const id = Snowflake.generate();
 

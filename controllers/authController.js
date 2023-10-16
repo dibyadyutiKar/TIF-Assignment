@@ -100,6 +100,27 @@ const signUp = async (req, res) => {
 const signIn = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log('Password ', password);
+
+    // check if valid email
+    if (!isValidEmail(email)) {
+      return res.status(400).json({
+        status: false,
+        errors: [
+          {
+            param: 'email',
+            message: 'Please provide a valid email address.',
+            code: 'INVALID_INPUT',
+          },
+        ],
+      });
+    }
+    function isValidEmail(email) {
+      // Regular expression for basic email validation
+      const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+
+      return emailRegex.test(email);
+    }
 
     let user = await userCollection.findOne({ email });
 
@@ -114,7 +135,7 @@ const signIn = async (req, res) => {
       _id: user._id,
     };
 
-    if (bcrypt.compare(password, user.password)) {
+    if (await bcrypt.compare(password, user.password)) {
       let token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: '2h',
       });
@@ -140,9 +161,15 @@ const signIn = async (req, res) => {
           },
         });
     } else {
-      return res.status(403).json({
-        success: false,
-        message: 'Password is incorrect',
+      return res.status(400).json({
+        status: false,
+        errors: [
+          {
+            param: 'password',
+            message: 'The credentials you provided are invalid.',
+            code: 'INVALID_CREDENTIALS',
+          },
+        ],
       });
     }
   } catch (err) {
